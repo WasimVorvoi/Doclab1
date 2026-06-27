@@ -1,0 +1,22 @@
+# DocLab worker dependencies for the shipped M0-M11 MVP.
+#
+# Runtime paths:
+# - tabular: pandas + numpy + scikit-learn + xgboost + datasets
+# - image: torch + torchvision + pillow
+# - text: transformers + peft + accelerate + rouge-score
+# - demo scripts: pyyaml + datasets
+# - tests: pytest
+numpy
+pandas
+scikit-learn
+xgboost
+datasets
+pyyaml
+torch
+torchvision
+pillow
+transformers
+peft
+accelerate
+rouge-score
+pytest

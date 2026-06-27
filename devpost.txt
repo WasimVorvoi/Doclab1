@@ -1,0 +1,75 @@
+## Inspiration
+
+One of us spent a summer working near a hospital research group, and the thing that stuck was how many good clinical ideas just die on a whiteboard. A doctor will say something like _"I bet we could tell which patients are going to be readmitted from a few basic labs,"_ and then... nothing happens, because turning that into an actual model means finding a data scientist, learning a pile of frameworks, and somehow doing it all without breaking patient privacy rules.
+
+The tools that exist don't really fix this. Most of them want you to upload your data to their cloud, or they assume you already know what a gradient-boosted tree is. Neither of those is going to fly with a clinician who just had an idea between patients.
+
+So we wanted to see how far we could get with a simpler promise: **you describe the idea in normal English, you get back a working prototype and an honest summary of how it did, and your data never leaves your laptop.**
+
+## What it does
+
+DocLab runs entirely on your own machine. You type what you're trying to do, in plain language, like "predict hospital readmission risk" or "classify these chest X-rays as normal or abnormal" or "summarize medical notes." From there it:
+
+- finds a relevant dataset, but only from a list we curated by hand ahead of time (it can't go off and grab some random dataset, and it can't make one up),
+- shows you a plain-English plan and makes you approve it before anything runs,
+- trains the model locally while you watch the progress, and
+- hands back the metrics plus a model card a doctor can actually read.
+
+It covers three kinds of data. **Tabular** data goes through XGBoost, and we always report the accuracy next to a dumb majority-class baseline so you can see whether the model is actually doing anything. **Images** go through a small CNN, and if the dataset is tiny the card warns you that the accuracy is probably overfitting. **Text** goes through a small language model fine-tuned with LoRA, scored with ROUGE-L plus three real before-and-after examples so you're not just trusting a number.
+
+Every run gets saved to a local history you can go back to, and every model card says, in no uncertain terms, that this is for research and prototyping and _not_ for actual patient care.
+
+## How we built it
+
+![DocLab screenshot](https://i.imgur.com/074BOtv.png)
+
+It's a desktop app, and we split it into four parts that mostly stay out of each other's way.
+
+The front end is **React + Tailwind** running inside **Tauri**, with five screens: where you type your goal, where you review the plan, the training screen, the results, and the history. We were careful to keep the wording clinical ("predict," "classify," "summarize") and keep model names out of the main flow.
+
+**Rust** handles the orchestration. It owns the job, the file paths, and a **SQLite** database that records every experiment. The actual training is a separate **Python** program that uses XGBoost, PyTorch, and Transformers with LoRA depending on what you asked for.
+
+The decision we're happiest about is boring on the surface: Rust and Python don't talk over any live connection. The whole conversation between them is two files on disk.
+
+```text
+Rust  ──writes──►  plan.json   ──►  Python worker
+Python ──writes──► metrics.json ──►  Rust
+```
+
+That kept the two halves from getting tangled up, and it meant every run left a clean paper trail we could inspect when something broke.
+
+We built it in order rather than all at once. We got the tabular path rock solid first, then added images and text on top of the exact same loop instead of rebuilding it each time. On a Mac the deep-learning runs use the GPU (MPS) if it's there and quietly drop to CPU if anything goes wrong.
+
+## Challenges we ran into
+
+The biggest one was resisting the urge to make the agent feel "smart." It would have been more impressive to let it search the web for datasets, but for healthcare that's a terrible idea, so we locked it to the curated list. **It physically cannot pick something we didn't vet.**
+
+The second was that accuracy lies. A model that just guesses the most common class can look 85% accurate and be completely useless. We ended up making the baseline comparison a real feature instead of a footnote, and if the model barely beats it, the card flat-out says the model may not be learning anything. Same idea drove the small-dataset warning on the image side.
+
+Getting three different runtimes to agree on anything was its own headache. We had to nail down the exact file formats and a fixed set of error codes early, mostly so that when Python fell over, the user saw a calm message instead of a wall of red traceback.
+
+And then there's the classic problem of a live ML demo blowing up in front of judges. We dealt with that by caching the datasets so it works offline, fixing every random seed so the run is identical each time, and committing a known-good run we can fall back to if the live one acts up.
+
+## Accomplishments that we're proud of
+
+Honestly, the fact that all three paths actually work end to end. We expected to ship the tabular one and fake the rest, but images and text both run for real, on the same machinery, and a full run finishes in a couple of minutes on a laptop.
+
+We also kept the privacy promise without hand-waving. There's no upload button to disable because there's no upload at all. It's local because of how it's built, not because we remembered to add a checkbox.
+
+And we like that a clinician never has to see the word "XGBoost." The whole thing speaks their language up front while still being completely reproducible underneath, with pinned dataset versions and recorded seeds, if a more technical person wants to check our work.
+
+## What we learned
+
+Mostly that the limits we put on ourselves made the thing better. Forcing the agent to stick to a fixed dataset list and forcing the two halves to talk only through files made the whole system way easier to reason about than something more "autonomous" would have been.
+
+We also came around on the idea that in medicine, a model telling you "this probably isn't learning anything" is worth more than one showing a big confident number. We spent almost as much time on the sanity checks as on the models themselves.
+
+And keeping the layers genuinely separate paid off faster than we expected. Adding the CNN and the LoRA path didn't mean touching the Rust orchestration at all, because they only ever communicated through those JSON files.
+
+## What's next for DocLab
+
+We'd like to widen the dataset marketplace a lot, with more curated public and synthetic datasets across more conditions and types of data.
+
+Beyond that, more kinds of tasks (regression, multi-class, image segmentation) without changing the "just describe it" front door. We also want the model cards to go deeper, with things like calibration and fairness breakdowns across patient subgroups, so a clinician can actually poke at why a model behaves the way it does.
+
+Longer term, we want project workspaces that group related experiments so you can watch a hypothesis evolve over many runs, and eventually some carefully privacy-preserving way to fine-tune on de-identified real data, always keeping the one rule we started with: **nothing leaves the machine.**

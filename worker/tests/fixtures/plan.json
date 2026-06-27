@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "dataset_id": "tiny_fixture",
+  "local_csv": "REPLACED_AT_RUNTIME",
+  "label_column": "readmitted",
+  "model_type": "xgboost",
+  "framework": "xgboost",
+  "device": "cpu",
+  "seed": 42,
+  "split": [0.8, 0.1, 0.1],
+  "primary_metric": "accuracy"
+}

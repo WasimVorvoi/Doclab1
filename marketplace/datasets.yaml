@@ -1,0 +1,80 @@
+# DocLab curated dataset marketplace (source of truth).
+# The agent may ONLY select dataset ids present in this file — never live
+# Hugging Face search at runtime. `revision` is a pinned commit SHA for
+# reproducibility (never a moving branch like `main`).
+#
+# Research notes: marketplace/DATASETS_RESEARCH.md
+datasets:
+  - id: diabetes_readmission
+    name: Diabetes 130-US Hospitals Readmission
+    hf_id: imodels/diabetes-readmission
+    revision: 191ab1f0aa68d52f6cd55d68df57849fad1751ca
+    description: Predict 30-day hospital readmission from diabetic encounter records.
+    category: readmission
+    data_type: tabular
+    task_types: [predict, classify]
+    modality: encounter records
+    license: UCI port (Diabetes 130-US Hospitals); research use
+    size: "~100k rows (train.csv + test.csv)"
+    label_column: readmitted
+    limitations: >-
+      Public UCI-derived research dataset; preprocessed/one-hot encoded by the
+      imodels team. Not representative of any single hospital; use carefully.
+
+  - id: heart_disease_uci
+    name: Heart Disease (UCI-style tabular)
+    hf_id: buio/heart-disease
+    revision: 4e539bff1729a7a4fd72fcdbb2dfbfcff71574fe
+    description: >-
+      Classify presence of heart disease from standard UCI-style clinical
+      features (age, cholesterol, chest pain type, etc.).
+    category: cardiology
+    data_type: tabular
+    task_types: [predict, classify]
+    modality: clinical vitals and indicators
+    license: UCI Heart Disease; public research dataset
+    size: "303 rows (train split)"
+    label_column: target
+    limitations: >-
+      Small public teaching dataset; class imbalance (~73% negative). Not for
+      clinical screening; prototype baseline only.
+
+  - id: chest_xray_pneumonia
+    name: Chest X-Ray — Normal vs Pneumonia
+    hf_id: hf-vision/chest-xray-pneumonia
+    revision: c1a67c18df1a52ec332ffc00418f4eaa61a9f2bc
+    description: >-
+      Binary image classification — chest X-rays labeled NORMAL or PNEUMONIA
+      (Kaggle Chest X-Ray Pneumonia port). Use for "classify medical images
+      normal vs abnormal" style goals.
+    category: radiology
+    data_type: image
+    task_types: [classify, detect]
+    modality: chest x-ray
+    license: See dataset card on Hugging Face; research/education use
+    size: "5216 train / 16 val / 624 test images"
+    label_column: label
+    limitations: >-
+      Pediatric-focused source cohort in original Kaggle set; labels are
+      NORMAL vs PNEUMONIA only. Subsample in the worker for hackathon time
+      limits. High accuracy on a subset does not imply clinical readiness.
+
+  - id: medical_text_summarization_synthetic
+    name: Synthetic Medical Text Summarization
+    hf_id: mustaphounii04/Synthetic-Medical-Text-Summarization
+    revision: d9eee97e61fdb39533541fe59fe4cbd8843cfd6d
+    description: >-
+      Summarize synthetic clinical narrative text; reference summaries in the
+      Summary column (input text in Text). For medical education / prototyping
+      summarization goals only.
+    category: clinical documentation
+    data_type: text
+    task_types: [summarize, generate]
+    modality: medical text
+    license: Synthetic data; see Hugging Face dataset card
+    size: "1481 train examples"
+    label_column: Summary
+    limitations: >-
+      Fully synthetic text — no real patients. Summary column is the reference
+      for ROUGE-style metrics; Text column is model input. Not evaluated for
+      clinical accuracy or PHI safety beyond synthetic source.

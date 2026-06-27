@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "primary_metric": "accuracy",
+  "metric_value": 0.643313,
+  "baseline_metric": 0.539059,
+  "device": "cpu",
+  "seed": 42,
+  "split": [
+    0.8,
+    0.1,
+    0.1
+  ],
+  "n_train": 81410,
+  "n_val": 10176,
+  "n_test": 10177,
+  "model_type": "xgboost",
+  "framework": "xgboost"
+}

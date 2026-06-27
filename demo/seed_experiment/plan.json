@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "dataset_id": "diabetes_readmission",
+  "hf_id": "imodels/diabetes-readmission",
+  "revision": "191ab1f0aa68d52f6cd55d68df57849fad1751ca",
+  "label_column": "readmitted",
+  "model_type": "xgboost",
+  "framework": "xgboost",
+  "device": "cpu",
+  "modality": "tabular",
+  "seed": 42,
+  "split": [0.8, 0.1, 0.1],
+  "primary_metric": "accuracy",
+  "goal_text": "I want to predict whether a patient is likely to be readmitted to the hospital.",
+  "summary": "Train a decision-tree tabular prototype on Diabetes 130-US Hospitals Readmission and report accuracy against a majority-class baseline.",
+  "local_csv": null
+}

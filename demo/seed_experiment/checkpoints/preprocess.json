@@ -1,0 +1,7 @@
+{
+  "feature_columns": [
+    "age",
+    "glucose"
+  ],
+  "label_column": "readmitted"
+}
